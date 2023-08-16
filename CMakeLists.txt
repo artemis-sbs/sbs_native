@@ -1,12 +1,16 @@
 # CMakeList.txt : CMake project for dasher, include source and define
 # project specific logic here.
 #
-cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
+cmake_minimum_required(VERSION 3.12) # FetchContent is available in 3.11+
 # Enable Hot Reload for MSVC compilers if supported.
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
 endif()
+
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std:c++20")
 
 project ("test")
 
@@ -52,11 +56,13 @@ if (NOT pybind11_FOUND) # If there's none, fetch and build raylib
 endif()
 
 
-pybind11_add_module(cmake_example src/main.cpp)
-
+pybind11_add_module(sbs_native src/main.cpp)
+#pybind11_LIBRARIES(sbs_native PUBLIC FastNoise)
+#add_library(sbs_native src/main.cpp)
+target_link_libraries(sbs_native PRIVATE FastNoise)
 
 # Add source to this project's executable.
-add_executable (test "test_main.cpp" "test_main.h")
+add_executable (test "test_main.cpp" "src/point_scatter.cpp" "test_main.h")
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} FastNoise)
 

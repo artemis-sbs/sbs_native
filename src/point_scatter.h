@@ -1,3 +1,5 @@
+#pragma once
+
 #include <cmath>
 #include <concepts>
 #include <ostream>
@@ -101,17 +103,34 @@ class PointScatter3d {
     T width{};
     T height{};
     T depth{};
+    T center_x{};
+    T center_y{};
+    T center_z{};
     std::default_random_engine eng;
     long unsigned int seed;
     std::uniform_real_distribution<T> width_dist;
     std::uniform_real_distribution<T> height_dist;
     std::uniform_real_distribution<T> depth_dist;
-    
+public:
+    T get_width() {return width;};
+    T get_height() {return height;};
+    T get_depth() {return depth;};
+    T get_center_x() {return center_x;};
+    T get_center_y() {return center_y;};
+    T get_center_z() {return center_z;};
+
 public:
     PointScatter3d() {}
     PointScatter3d(T cx, T cy, T cz, T width, T height, T depth, long unsigned int seed=0) {
         if (seed == 0) this->seed = static_cast<long unsigned int>(time(0));
         else this->seed = seed;
+        center_x = cx;
+        center_y = cy;
+        center_z = cz;
+        this->width = width;
+        this->height = height;
+        this->depth = depth;
+
 
         eng = std::default_random_engine {seed};
         width_dist = std::uniform_real_distribution<T> (cx-width/2, cx+width/2);

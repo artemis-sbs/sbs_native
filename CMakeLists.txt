@@ -56,13 +56,13 @@ if (NOT pybind11_FOUND) # If there's none, fetch and build raylib
 endif()
 
 
-pybind11_add_module(sbs_native src/main.cpp)
+pybind11_add_module(sbs_native src/main.cpp src/image.cpp "src/colors.cpp")
 #pybind11_LIBRARIES(sbs_native PUBLIC FastNoise)
 #add_library(sbs_native src/main.cpp)
 target_link_libraries(sbs_native PRIVATE FastNoise)
 
 # Add source to this project's executable.
-add_executable (test "test_main.cpp" "src/point_scatter.cpp" "test_main.h")
+add_executable (test "test_main.cpp" "src/point_scatter.cpp" "src/image.cpp" "test_main.h" "src/map_data.cpp" "src/colors.cpp")
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} FastNoise)
 

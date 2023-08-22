@@ -51,14 +51,14 @@ public:
     MapGenerator(T cx, T cy, T cz, T width, T height, T depth, long unsigned int seed=0)
     {
         this->seed = seed;
-        auto simplex =FastNoise::New<FastNoise::OpenSimplex2>(); 
+        auto simplex =FastNoise::New<FastNoise::Simplex>(); 
         auto fractal =FastNoise::New<FastNoise::FractalFBm>(); 
         auto dom_scale =FastNoise::New<FastNoise::DomainScale>(); 
         dom_scale->SetScale(0.66f);
         dom_scale->SetSource(fractal);
         fractal->SetSource(simplex);
         fractal->SetGain(0.3f);
-        fractal->SetLacunarity(4.5);
+        fractal->SetLacunarity(5);
         //fractal->SetWeightedStrength(0.5);
         fractal->SetOctaveCount(3);
         // Use this as terrain

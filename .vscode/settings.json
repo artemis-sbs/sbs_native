@@ -86,6 +86,10 @@
         "xutility": "cpp"
     },
     "cSpell.words": [
-        "Lacunarity"
+        "autosummary",
+        "currentmodule",
+        "Lacunarity",
+        "pbdoc",
+        "toctree"
     ]
 }

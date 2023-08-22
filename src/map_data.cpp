@@ -13,7 +13,6 @@ int i, j;
     int values[11] {0, 0, 0, 0, 0,0,0,0,0,0,0};
 
     //float map_left = map.
-    
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
             vector3d<float> v{(float)i,0,(float)j};

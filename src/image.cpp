@@ -1,7 +1,7 @@
 #include "image.h"
 #include <stdio.h>
 
-void generateBitmapImage (unsigned char* image, int height, int width, char* imageFileName)
+void generateBitmapImage (unsigned char* image, int width, int height,  char* imageFileName)
 {
     int widthInBytes = width * BYTES_PER_PIXEL;
 
@@ -15,7 +15,7 @@ void generateBitmapImage (unsigned char* image, int height, int width, char* ima
     unsigned char* fileHeader = createBitmapFileHeader(height, stride);
     fwrite(fileHeader, 1, FILE_HEADER_SIZE, imageFile);
 
-    unsigned char* infoHeader = createBitmapInfoHeader(height, width);
+    unsigned char* infoHeader = createBitmapInfoHeader( width, height);
     fwrite(infoHeader, 1, INFO_HEADER_SIZE, imageFile);
 
     int i;
@@ -49,7 +49,7 @@ unsigned char* createBitmapFileHeader (int height, int stride)
     return fileHeader;
 }
 
-unsigned char* createBitmapInfoHeader (int height, int width)
+unsigned char* createBitmapInfoHeader (int width, int height )
 {
     static unsigned char infoHeader[] = {
         0,0,0,0, /// header size

@@ -79,29 +79,20 @@ void old_test()
             float t_scale = 10;
             // terrace is -1 to 1
             //https://www.reddit.com/r/GraphicsProgramming/comments/kcx4yl/is_perlin_noise_supposed_to_be_this_gray_and/
-            auto terrace = node->GenSingle2D(v.x*scale*t_scale, v.z*scale*t_scale, seed);
+            auto terrace = node->GenSingle2D(v.x*scale*t_scale, v.z*scale*t_scale, seed) ;
 
-            auto t_holes = abs(node->GenSingle2D(v.x*scale*t_scale, v.z*scale*t_scale, seed+2000));
-            if (t_holes < 0.25) t_holes = 0;
-            else (t_holes = 1.0) = 1.0;
+            // auto t_holes = abs(node->GenSingle2D(v.x*scale*t_scale, v.z*scale*t_scale, seed+2000));
+            // if (t_holes < 0.25) t_holes = 0;
+            // else (t_holes = 1.0) = 1.0;
             //t_holes -= node->GenSingle2D(v.x*scale*t_scale, v.z*scale*t_scale, seed-2000);
             //auto t_holes = 1.0;
 
             // Use simple for factions for crisp borders?
             auto faction = node->GenSingle2D(v.x*scale*10, v.z*scale*10, seed);
-            auto holes = abs(node->GenSingle2D(v.x*scale*10, v.z*scale*10, seed+2000));
-            if (holes < 0.25) holes = 0;
-            else (holes = 1.0) = 1.0;
-            //holes -= node->GenSingle2D(v.x*scale*10, v.z*scale*10, seed-2000);
-            //auto holes=1.0;
-
-            // auto holes2 = node->GenSingle2D(v.x*scale*10, v.z*scale*10, seed-2000);
-            //terrace *= t_holes;
-            faction*= holes;
-
-            bool is_neg = faction <-0.1;
-            bool is_pos = faction >0.1;
-            
+            // Factions are marked from the peaks down
+            float peaks_threshold = 0.75;
+            bool is_neg = faction <-1+peaks_threshold;
+            bool is_pos = faction >1-peaks_threshold;
             bool is_zero = !is_neg && !is_pos;
             //bool true_zero = faction <= 0.01 && faction >= 0.01;
             int f= 255;
@@ -111,9 +102,10 @@ void old_test()
             else if (is_pos) f = 253;
 
             faction_data.set_faction(X-1, Y-1,f);
-
-            is_neg = terrace <-0.1;
-            is_pos = terrace >0.1;
+            /// Terrain is from outer edge in
+            float terrain_border_threshold = 0.1;
+            is_neg = terrace <-terrain_border_threshold;
+            is_pos = terrace > terrain_border_threshold;
             is_zero = !is_neg && !is_pos;
             
             auto terrace_pre = terrace;

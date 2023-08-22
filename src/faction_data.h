@@ -286,8 +286,8 @@ public:
     void generate_image(char *factionFileName)
     {
         slow_fill();
-        //recolor_anom();
-        remove_border();
+        recolor_anom();
+        //remove_border();
 
         unsigned char *faction_image = new unsigned char[height * width * BYTES_PER_PIXEL];
         int image_width = width * BYTES_PER_PIXEL;

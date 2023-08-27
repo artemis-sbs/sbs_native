@@ -4,8 +4,9 @@
 #include <concepts>
 #include <ostream>
 #include <random>
+#include <numbers>
 
-
+constexpr double PI = std::numbers::pi;
 
 
 //https://codereview.stackexchange.com/questions/272800/c-vector3d-class
@@ -54,7 +55,7 @@ template<typename T> std::ostream& operator<<(std::ostream& os, const vector2d<T
 }
 
 template<typename T>
-    //requires std::floating_point<T> or std::integral<T>
+    requires std::floating_point<T> or std::integral<T>
 class vector3d
 {
 public:
@@ -81,6 +82,34 @@ public:
 
     vector3d& operator*=(T s) { x *= s; y *= s; z *= s; return *this; }
     vector3d& operator/=(T s) { x /= s; y /= s; z /= s; return *this; }
+    vector3d rotate_around_point(const vector3d& origin, T ax, T ay, T az, bool degree) {
+        // Translated from python version
+        T px = this->x - origin.x;
+        T py = this->y - origin.y;
+        T pz = this->z - origin.z;
+        // # rotation on x, y, z
+        T tx = !degree ? ax: ax * (PI / 180);
+        T ty = !degree ? ay: ay * (PI / 180);
+        T tz = !degree ? az: az * (PI / 180);
+        // # The transformation matrices.
+        T rx[9] = {1, 0, 0, 0, cos(tx), -sin(tx), 0, sin(tx), cos(tx)};
+        T ry[9] = {cos(ty), 0, sin(ty), 0, 1, 0, -sin(ty), 0, cos(ty)};
+        T rz[9] = {cos(tz), -sin(tz), 0, sin(tz), cos(tz), 0, 0, 0, 1};
+        // //# Matrix multiplication
+        T rotatedX[3] = {(rx[0] * px + rx[1] * py + rx[2] * pz), (rx[3] * px + rx[4] * py + rx[5] * pz), (rx[6] * px + rx[7] * py + rx[8] * pz)};
+        px = rotatedX[0];
+        py = rotatedX[1];
+        pz = rotatedX[2];
+        T rotatedY[3] = {(ry[0] * px + ry[1] * py + ry[2] * pz), (ry[3] * px + ry[4] * py + ry[5] * pz), (ry[6] * px + ry[7] * py + ry[8] * pz)};
+        px = rotatedY[0];
+        py = rotatedY[1];
+        pz = rotatedY[2];
+        T rotatedZ[3] = {(rz[0] * px + rz[1] * py + rz[2] * pz), (rz[3] * px + rz[4] * py + rz[5] * pz), (rz[6] * px + rz[7] * py + rz[8] * pz)};
+        px = rotatedZ[0];
+        py = rotatedZ[1];
+        pz = rotatedZ[2];
+        return vector3d(px + origin.x, py + origin.y, pz + origin.z);
+    }
 };
 
 template<typename T> auto operator+(const vector3d<T>& v) { return v; }

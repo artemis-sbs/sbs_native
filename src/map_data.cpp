@@ -21,7 +21,8 @@ int i, j;
             //https://www.reddit.com/r/GraphicsProgramming/comments/kcx4yl/is_perlin_noise_supposed_to_be_this_gray_and/
             int terrain_type;
             int sample_type;
-            map.get_value_at(v.x, 0, v.z, terrain_type, sample_type, scale);
+            int faction_type;
+            map.get_value_at(v.x, 0, v.z, terrain_type, sample_type, faction_type, scale);
             //node->GenUniformGrid2D(&image, 0,0, width, height, scale, 1234);
             
                 
@@ -51,7 +52,6 @@ int i, j;
 
     generateBitmapImage((unsigned char*) image, height, width, imageFileName);
     printf("Map Image generated!!");
- 
     delete [] image;
 }
 

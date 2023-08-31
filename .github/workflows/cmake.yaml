@@ -44,10 +44,14 @@ jobs:
       - name: Create Artifacts
         run: |
           mkdir release
+          cd build\Release
           dir
+          cd ..
+          cd ..
           copy build\Release\gui.exe release\gui.exe
           copy build\Release\test.exe release\test.exe
-          copy build\Release\sbs_native.cp311-win_amd64.pyd release\sbs_native.cp311-win_amd64.pyd
+
+      # copy build\Release\sbs_native.cp311-win_amd64.pyd release\sbs_native.cp311-win_amd64.pyd
           
       #   copy build\Release\SDL2.dll release\SDL2.dll
 
@@ -63,5 +67,6 @@ jobs:
         with:
           # if shared library
           # artifacts: "release/gui.exe, release/igui.exe, release/SDL2.dll"
-          artifacts: "release/gui.exe, release/test.exe, release/sbs_native.cp311-win_amd64.pyd"
+          # artifacts: "release/gui.exe, release/test.exe, release/sbs_native.cp311-win_amd64.pyd"
+          artifacts: "release/gui.exe, release/test.exe"
           token: ${{ secrets.GITHUB_TOKEN }}

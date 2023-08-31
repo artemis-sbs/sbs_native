@@ -29,11 +29,13 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       # Usually this is always needed
-      - name: Set env version
-        id: get_version
-        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+      - id: get_version
+        uses: battila7/get-version-action@v2
     
       - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: '3.11' 
 
       - name: CMAKE Configure
         run: cmake -S . -B build
@@ -44,14 +46,9 @@ jobs:
       - name: Create Artifacts
         run: |
           mkdir release
-          cd build\Release
-          dir
-          cd ..
-          cd ..
           copy build\Release\gui.exe release\gui.exe
           copy build\Release\test.exe release\test.exe
-
-      # copy build\Release\sbs_native.cp311-win_amd64.pyd release\sbs_native.cp311-win_amd64.pyd
+          copy build\Release\sbs_native.cp311-win_amd64.pyd release\sbs_native.${{steps.get_version.outputs.version-without-v}}.cp311-win_amd64.pyd
           
       #   copy build\Release\SDL2.dll release\SDL2.dll
 
@@ -67,6 +64,6 @@ jobs:
         with:
           # if shared library
           # artifacts: "release/gui.exe, release/igui.exe, release/SDL2.dll"
-          # artifacts: "release/gui.exe, release/test.exe, release/sbs_native.cp311-win_amd64.pyd"
-          artifacts: "release/gui.exe, release/test.exe"
+          # artifacts: "release/gui.exe, release/test.exe"
+          artifacts: "release/gui.exe, release/test.exe, release/sbs_native.${{steps.get_version.outputs.version-without-v}}.cp311-win_amd64.pyd"
           token: ${{ secrets.GITHUB_TOKEN }}

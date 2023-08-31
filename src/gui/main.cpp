@@ -12,13 +12,45 @@
 #include <stdio.h>
 #include <SDL.h>
 
+#include "star_system.h"
+
 #if !SDL_VERSION_ATLEAST(2,0,17)
 #error This backend requires SDL 2.0.17+ because of SDL_RenderGeometry() function
 #endif
 
+int pixels_per_int = 50;
+float max_radius = 50.0/40.0/2.0;
+
+void draw_galaxy(int gx, int gy, 
+                int width, int height, 
+                int sel_x, int sel_y,
+                float star_date) {
+    // Layer is Galaxy, Star, Planet
+    auto drawlist = ImGui::GetBackgroundDrawList();
+    for(int y=0;y<height/pixels_per_int; y+= 1) {
+        for(int x = 0; x< width/pixels_per_int; x+=1) {
+            StarSystem system(gx+x,gy+y, false);
+            if (system.exists()) {
+                ImColor color = ImColor::HSV(system.star_color()/8.0,1.0f, 1.0f);
+	            drawlist->AddCircleFilled(ImVec2(x*pixels_per_int,y*pixels_per_int), 
+                    system.star_radius()*max_radius, color, 32);
+                if (sel_x == gx+x && sel_y == gy+y) {
+                    drawlist->AddCircle(ImVec2(x*pixels_per_int,y*pixels_per_int), 
+                        50, IM_COL32(255,255,0,255), 32);
+                }
+	            //drawlist->AddText(ImVec2(128,128+70), IM_COL32(255,0,0,255), "Hello", NULL);
+            }
+        }
+        
+    }
+    
+}
 // Main code
 int main(int, char**)
 {
+    ImVec2 galaxy_offset {0,0};
+    ImVec2 galaxy_speed {1,1};
+    ImVec2 selection{-1,-1};
     // Setup SDL
     if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_GAMECONTROLLER) != 0)
     {
@@ -94,12 +126,48 @@ int main(int, char**)
         while (SDL_PollEvent(&event))
         {
             ImGui_ImplSDL2_ProcessEvent(&event);
+
+            
             if (event.type == SDL_QUIT)
                 done = true;
             if (event.type == SDL_WINDOWEVENT && event.window.event == SDL_WINDOWEVENT_CLOSE && event.window.windowID == SDL_GetWindowID(window))
                 done = true;
-        }
 
+            if (!io.WantCaptureKeyboard && event.type == SDL_KEYUP) {
+                 switch( event.key.keysym.sym )
+                        {
+                            case SDLK_UP:
+                                galaxy_offset.y -= galaxy_speed.y;
+                            break;
+
+                            case SDLK_DOWN:
+                                galaxy_offset.y += galaxy_speed.y;
+                            break;
+
+                            case SDLK_LEFT:
+                                galaxy_offset.x -= galaxy_speed.x;
+                            break;
+
+                            case SDLK_RIGHT:
+                                galaxy_offset.x += galaxy_speed.x;
+                            break;
+                        }
+            }
+
+            if (!io.WantCaptureMouse) {
+                if (event.type == SDL_MOUSEBUTTONDOWN && 
+                    event.button.button == SDL_BUTTON_LEFT) {
+                        int x,y;
+                        SDL_GetMouseState(&x,&y);
+                        selection.x = galaxy_offset.x+((x+25)/pixels_per_int);
+                        selection.y =galaxy_offset.y+((y+25)/pixels_per_int);
+                    }
+            }
+
+        }
+        int width=0, height = 0;
+        SDL_GetWindowSize(window,&width,&height);
+        
         // Start the Dear ImGui frame
         ImGui_ImplSDLRenderer2_NewFrame();
         ImGui_ImplSDL2_NewFrame();
@@ -114,21 +182,51 @@ int main(int, char**)
             static float f = 0.0f;
             static int counter = 0;
 
-            ImGui::Begin("Hello, world!");                          // Create a window called "Hello, world!" and append into it.
+            ImGui::Begin("Solar system"); 
 
-            ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
-            ImGui::Checkbox("Demo Window", &show_demo_window);      // Edit bools storing our window open/close state
-            ImGui::Checkbox("Another Window", &show_another_window);
+            StarSystem system(selection.x,selection.y, true);
+            ImVec2 canvas_pos_min = ImGui::GetItemRectMin();
+            ImVec2 canvas_pos = ImGui::GetItemRectMax();
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            for(int p=0; p< system.planets.size();p++) {
+                auto planet = system.planets[p];
+                ImColor color = ImColor::HSV((planet.temperature+200)/28.0,1.0f, 1.0f);
+                //ImColor color = ImColor::HSV(1.0f,1.0f, 1.0f);
+                int x = canvas_pos_min.x +  p*70+ 35;
+                int y = canvas_pos.y + 35;
+                draw_list->AddCircleFilled(ImVec2(x,y), planet.radius, color,32);
+                y+=35;
+                //draw_list->AddCircleFilled(ImVec2(x,y), 50, color,32);
+                for (int s=0;s<planet.stations.size();s++) {
+                    y += 20;
+                    auto station = planet.stations[s];
+                    ImColor color = ImColor::HSV(station.type/5.0f,1.0f, 1.0f);
+                    draw_list->AddCircleFilled(ImVec2(x,y), 10, color,6);
+                }
+                for (int s=0;s<planet.moons.size();s++) {
+                    y += 30;
+                    auto moon = planet.moons[s];
+                    ImColor color = ImColor::HSV((moon.gases),1.0f, 1.0f);
+                    draw_list->AddCircleFilled(ImVec2(x,y), moon.radius*5, color,24);
+                }
+            }
 
-            ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
-            ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+            
+            ImGui::InvisibleButton("canvas", ImVec2(1000,400));
 
-            if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
-                counter++;
-            ImGui::SameLine();
-            ImGui::Text("counter = %d", counter);
+           // ImGui::Text("This is some useful text.");               // Display some text (you can use a format strings too)
 
-            ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
+           /// ImGui::Checkbox("Another Window", &show_another_window);
+
+            // ImGui::SliderFloat("float", &f, 0.0f, 1.0f);            // Edit 1 float using a slider from 0.0f to 1.0f
+            // ImGui::ColorEdit3("clear color", (float*)&clear_color); // Edit 3 floats representing a color
+
+            // if (ImGui::Button("Button"))                            // Buttons return true when clicked (most widgets return true when edited/activated)
+            //     counter++;
+            // ImGui::SameLine();
+            // ImGui::Text("counter = %d", counter);
+
+            // ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / io.Framerate, io.Framerate);
             ImGui::End();
         }
 
@@ -141,10 +239,15 @@ int main(int, char**)
                 show_another_window = false;
             ImGui::End();
         }
-
-		auto drawlist = ImGui::GetBackgroundDrawList();
-		drawlist->AddCircle(ImVec2(128,128), 64, IM_COL32(255,0,0,255), 32, 5.0);
-		drawlist->AddText(ImVec2(128,128+70), IM_COL32(255,0,0,255), "Hello", NULL);
+        float star_date = 1.0f;
+        draw_galaxy(galaxy_offset.x, galaxy_offset.y, 
+            width, height, 
+            selection.x, selection.y,
+            star_date);
+        
+        
+        
+		
 
         // Rendering
         ImGui::Render();

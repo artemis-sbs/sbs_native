@@ -1,7 +1,11 @@
 #include <cstdint>
 #include <vector>
 #include <utility>
+#include "squirrel.h"
 
+
+//////////////////////////////////////////////////////////////////////
+// // A fast, reasonably robust random numbers
 class RandomContext {
     uint32_t lehmer_value;
 public:
@@ -22,18 +26,46 @@ public:
         return (lehmer32_random() % (max-min)) + min;
     }
     float a_float(float min, float max) {
-        return ((float)lehmer32_random() / (float)(0x7FFF)) * (max-min) + min;
+        return ((float)lehmer32_random() / (float)(0xfFFF'ffff)) * (max-min) + min;
     }
-    double a_double(float min, float max) {
+    double a_double(double min, double max) {
         return ((double)lehmer32_random() / (double)(0x7FFF'FFFF)) * (max-min) + min;
     }
 };
 
+/// @brief ////////////////////////////////////
+//  A Random generation based on noise and 
+//  can be completely repeatable, as well 
+//  as review sequence, rewind, etc.
+class RandomContextSquirrel {
+    uint32_t offset;
+    uint32_t seed;
+public:
+    RandomContextSquirrel(uint32_t seed=0, uint32_t offset=0) : offset(offset), seed(seed) {
+    }
+    inline uint32_t get_random_index(uint32_t index, uint32_t seed) {
+        return SquirrelNoise5(index, seed);
+    }
+    // A fast, reasonably robust random numbers
+    inline uint32_t get_random() {
+        return get_random_index(offset++, seed);
+    }
+    int an_int(int min, int max) {
+        return (get_random() % (max-min)) + min;
+    }
+    float a_float(float min, float max) {
+        return ((float)get_random() / (float)(0xfFFF'ffff)) * (max-min) + min;
+    }
+    double a_double(double min, double max) {
+        return ((double)get_random() / (double)(0x7FFF'FFFF)) * (max-min) + min;
+    }
+};
 
+/// @brief 
 class Moon {
 public:
     double distance = 0.0;
-    double diameter = 0.0;
+    double radius = 0.0;
     double foliage = 0.0;
     double minerals = 0.0;
     double water = 0.0;
@@ -52,7 +84,7 @@ public:
 class Planet {
 public:
     double distance = 0.0;
-    double diameter = 0.0;
+    double radius = 0.0;
     double foliage = 0.0;
     double minerals = 0.0;
     double gases = 0.0;
@@ -67,24 +99,26 @@ public:
 
 
 class StarSystem {
-    bool exists = false;
-    float star_diameter = 0.0;
-    int star_color = 0;
+    bool _exists = false;
+    float _star_radius = 0.0;
+    int _star_color = 0;
+    RandomContextSquirrel rnd;
+
+public:
     std::vector<Planet> planets;
-    RandomContext rnd;
-public:    
-    StarSystem(uint32_t x, uint32_t y, bool generate_children, uint32_t seed) : rnd(seed + (x&0xFFFF) <<16 | (y&0xFFFF)){
+public:
+    StarSystem(uint32_t x, uint32_t y, bool generate_children, uint32_t seed=0) : rnd(seed + (x&0xFFFF) <<16 | (y&0xFFFF)){
         // 16 bit resolution of the system by masking x,y
         // this should allow for a wrapping of the universe
 
         // Is this an existing start system
         // odds 1 in 20
-        exists = (rnd.an_int(0,20) == 1);
-        if (!exists) {
+        _exists = (rnd.an_int(0,20) == 1);
+        if (!_exists) {
             return;
         }
-        star_diameter = rnd.a_float(10.0, 40.0);
-        star_color = rnd.an_int(0,8);
+        _star_radius = rnd.a_float(10.0, 40.0);
+        _star_color = rnd.an_int(0,8);
 
         // If the children are not needed skip
         if (!generate_children) return;
@@ -95,7 +129,7 @@ public:
             Planet p;
             p.distance = distance;
             distance += rnd.a_double(60.0, 200.0);
-            p.diameter = rnd.a_double(4.0, 20.0);
+            p.radius = rnd.a_double(4.0, 20.0);
             p.temperature = rnd.a_double(-200.0, 300);
             // Make up
             p.foliage = rnd.a_double(0.0, 1.0);
@@ -117,7 +151,7 @@ public:
             for (int s=0; s<stations; s++) {
                 Station station;
                 station.type = rnd.an_int(0, 5);
-                station.population = std::max(rnd.an_int(-500*station.type, 2000*station.type), 0);
+                station.population = std::max(rnd.an_int(-500*(station.type+1), 2000*(station.type+1)), 0);
                 p.stations.push_back(station);
             }
 
@@ -129,7 +163,7 @@ public:
                 moon.distance = distance;
 
                 orbit_distance += rnd.a_double(0.4, 2.0);
-                moon.diameter = rnd.a_double(0.4, 2.0);
+                moon.radius = rnd.a_double(0.4, 2.0);
 
 
                 moon.temperature = rnd.a_double(-200.0, 300);
@@ -152,6 +186,15 @@ public:
             planets.push_back(p);
         }
         
+    }
+    bool exists() {
+        return _exists;
+    }
+    int star_color() {
+        return _star_color;
+    }
+    float star_radius() {
+        return _star_radius;
     }
 };
 

@@ -58,23 +58,7 @@ void old_test()
 {
     unsigned long int seed = 1234;
     auto simplex =FastNoise::New<FastNoise::Value>(); 
-    auto fractal =FastNoise::New<FastNoise::FractalFBm>(); 
-    auto region_distance = FastNoise::New<FastNoise::CellularDistance>();
-    auto region_value = FastNoise::New<FastNoise::CellularValue>();
-    float region_jitter = 2.0;
-    region_distance->SetJitterModifier(region_jitter);
-    region_value->SetJitterModifier(region_jitter);
-    region_distance->SetDistanceFunction(FastNoise::DistanceFunction::EuclideanSquared);
-    region_value->SetDistanceFunction(FastNoise::DistanceFunction::EuclideanSquared);
-
-    // auto dom_scale =FastNoise::New<FastNoise::DomainScale>(); 
-    // dom_scale->SetScale(0.66f);
-    // dom_scale->SetSource(fractal);
-    fractal->SetSource(simplex);
-    fractal->SetGain(0.3f);
-    fractal->SetLacunarity(5);
-    //fractal->SetWeightedStrength(1.5);
-    fractal->SetOctaveCount(3);
+  
     // Use this as terrain
     auto node = simplex;
 
@@ -143,9 +127,10 @@ void old_test()
             swirl(source_x, source_z, center_x,center_z, source_x, source_z, region_scale*scale*width, 0.3);
             // Use simple for regions for crisp borders?
             
-            auto region_temp = node->GenSingle2D(source_x, source_z, seed+5578412) * 20;
-            auto region_moist = node->GenSingle2D(source_x, source_z, seed-251890) * 20;
-            float region =floor((round(region_moist+20) + round(region_temp+20)) /10);
+            //auto region_temp = node->GenSingle2D(source_x, source_z, seed+5578412) * 20;
+            //auto region_moist = node->GenSingle2D(source_x, source_z, seed-251890) * 20;
+            //float region =floor((round(region_moist+20) + round(region_temp+20)) /10);
+            float region = terrace;
             if (v.x < fade) region = region * (1.0-((fade-v.x)/fade));
             if (v.z < fade) region = region * (1.0-((fade-v.z)/fade));
             if (v.x > width- fade) region = region * (width-v.x)/fade;
@@ -164,7 +149,7 @@ void old_test()
             if (is_neg) f = 254;
             else if (is_pos) f = 253;
 
-            region_data.set_region(X-1, Y-1,region);
+            region_data.set_region(X-1, Y-1,f);
             /// Terrain is from outer edge in
             float terrain_border_threshold = 0.1;
             is_neg = terrace <-terrain_border_threshold;
@@ -178,7 +163,7 @@ void old_test()
             
             
             //int t = (int)terrace;
-            int t = (int)region;
+            int t = (int)terrace;
             float sample_height =  terrace-(float)t;
             sample_height *= sample_multiplier;
 

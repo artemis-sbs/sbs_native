@@ -1,0 +1,66 @@
+# All actions with a name are displayed in the "Actions" page
+name: CI
+
+
+on:
+  push:
+    #branches: [ main ]
+    tags:
+      - "*"
+  # pull_request:
+    #branches:
+  # Workflow_dispatch is manual
+  workflow_dispatch:
+  
+#
+# Jobs run separately and a new build machine for each
+#
+jobs:
+
+  # Under jobs you can name thing whatever you want
+
+  # This is a build step
+  build:
+    # runs-on: what build machine ubuntu-latest, windows-latest
+    runs-on: windows-latest
+    permissions: write-all
+
+    # steps are the actions for the job
+    steps:
+      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
+      # Usually this is always needed
+      - name: Set env version
+        id: get_version
+        run: echo ::set-output name=VERSION::${GITHUB_REF/refs\/tags\//}
+    
+      - uses: actions/checkout@v3
+
+      - name: CMAKE Configure
+        run: cmake -S . -B build
+
+      - name: CMAKE Build
+        run: cmake --build ./build --target ALL_BUILD --config Release
+
+      - name: Create Artifacts
+        run: |
+          mkdir release
+          copy build\Release\gui.exe release\gui.exe
+          copy build\Release\test.exe release\test.exe
+          copy build\Release\sbs_native.cp311-win_amd64.pyd release\sbs_native.${{ steps.get_version.outputs.VERSION }}.cp311-win_amd64.pyd
+          
+      #   copy build\Release\SDL2.dll release\SDL2.dll
+
+     # - name: Publish Artifact
+     #   uses: actions/upload-artifact@v3
+     #   with:
+     #     name: windows-release
+     #     path: release
+
+      # this needed permissions, and token?
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          # if shared library
+          # artifacts: "release/gui.exe, release/igui.exe, release/SDL2.dll"
+          artifacts: "release/gui.exe, release/test.exe, release/sbs_native.${{ steps.get_version.outputs.VERSION }}.cp311-win_amd64.pyd"
+          token: ${{ secrets.GITHUB_TOKEN }}

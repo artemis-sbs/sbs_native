@@ -30,8 +30,9 @@ target_link_libraries(${PROJECT_NAME} FastNoise)
 
 
 
-add_executable (gui  "src/gui/main.cpp" )
-target_link_libraries(gui PRIVATE SDL2::SDL2 imgui )
+add_executable (gui  "src/gui/main.cpp")
+target_include_directories(gui PUBLIC "src/cosmos")
+target_link_libraries(gui PRIVATE SDL2::SDL2-static imgui )
 if (MSVC)
     target_compile_options(gui PRIVATE /W4)
 else()

@@ -11,12 +11,7 @@ if (NOT TARGET imgui)
             DOWNLOAD_EXTRACT_TIMESTAMP OFF
             URL https://github.com/ocornut/imgui/archive/refs/tags/${IMGUI_VERSION_git}.tar.gz
         )
-        FetchContent_GetProperties(imgui)
-        if (NOT imgui_POPULATED) # Have we downloaded raylib yet?
-            set(FETCHCONTENT_QUIET NO)
-            FetchContent_Populate(imgui)
-            #add_subdirectory(${imgui_SOURCE_DIR} ${imgui_BINARY_DIR})
-        endif()
+        FetchContent_MakeAvailable(imgui)
 	endif()
 
 endif()

@@ -30,15 +30,24 @@ target_link_libraries(${PROJECT_NAME} FastNoise)
 
 
 
-add_executable (gui  "src/gui/main.cpp")
+# add_executable (gui  "src/gui/main.cpp")
+# target_include_directories(gui PUBLIC "src/cosmos")
+# target_link_libraries(gui PRIVATE SDL2::SDL2-static imgui )
+# if (MSVC)
+#     target_compile_options(gui PRIVATE /W4)
+# else()
+#     target_compile_options(gui PRIVATE -Wall -Wextra -pedantic)
+# endif()
+#target_copy_webgpu_binaries(gui)
+
+add_executable (gui  "src/gui/main_rl.cpp")
 target_include_directories(gui PUBLIC "src/cosmos")
-target_link_libraries(gui PRIVATE SDL2::SDL2-static imgui )
+target_link_libraries(gui PRIVATE raylib rlimgui imgui )
 if (MSVC)
     target_compile_options(gui PRIVATE /W4)
 else()
     target_compile_options(gui PRIVATE -Wall -Wextra -pedantic)
 endif()
-#target_copy_webgpu_binaries(gui)
 
 
 if (CMAKE_VERSION VERSION_GREATER 3.12)

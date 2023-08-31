@@ -11,7 +11,12 @@ if (NOT TARGET imgui)
             DOWNLOAD_EXTRACT_TIMESTAMP OFF
             URL https://github.com/ocornut/imgui/archive/refs/tags/${IMGUI_VERSION_git}.tar.gz
         )
-        FetchContent_MakeAvailable(imgui)
+        FetchContent_GetProperties(imgui)
+        if (NOT imgui_POPULATED) # Have we downloaded raylib yet?
+            set(FETCHCONTENT_QUIET NO)
+            FetchContent_Populate(imgui)
+            #add_subdirectory(${imgui_SOURCE_DIR} ${imgui_BINARY_DIR})
+        endif()
 	endif()
 
 endif()
@@ -21,10 +26,10 @@ endif()
 add_library(imgui STATIC
     # Among the different backends available, we are interested in connecting
     # the GUI to GLFW andWebGPU:
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.h
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.h
-    ${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp
+    #${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.h
+    #${imgui_SOURCE_DIR}/backends/imgui_impl_sdl2.cpp
+    #${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.h
+    #${imgui_SOURCE_DIR}/backends/imgui_impl_sdlrenderer2.cpp
 
     # Bonus to add some C++ specific features (the core ImGUi is a C library)
     ${imgui_SOURCE_DIR}/misc/cpp/imgui_stdlib.h
@@ -48,4 +53,4 @@ target_include_directories(imgui
     PUBLIC ${imgui_SOURCE_DIR}/beckends
     PUBLIC ${imgui_SOURCE_DIR}/include
     )
-target_link_libraries(imgui PUBLIC SDL2::SDL2-static)
+#target_link_libraries(imgui PUBLIC SDL2::SDL2-static)

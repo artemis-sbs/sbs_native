@@ -68,9 +68,9 @@ struct RGB HSVToRGB(struct HSV hsv) {
 	}
 
 	struct RGB rgb;
-	rgb.R = r * 255;
-	rgb.G = g * 255;
-	rgb.B = b * 255;
+	rgb.R = (unsigned char)(r * 255);
+	rgb.G = (unsigned char)(g * 255);
+	rgb.B = (unsigned char)(b * 255);
 
 	return rgb;
 }

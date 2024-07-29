@@ -8,14 +8,14 @@
 #include <map>
 #include <random>
 #include <string>
-#include "src/point_scatter.h"
-#include "src/colors.h"
+#include "src/cosmos/point_scatter.h"
+#include "src/cosmos/colors.h"
 #include <algorithm>
 
 
-#include "src/image.h"
-#include "src/map_data.h"
-#include "src/region_data.h"
+#include "src/cosmos/image.h"
+#include "src/cosmos/map_data.h"
+#include "src/cosmos/region_data.h"
 
 
 void old_test();

@@ -54,7 +54,7 @@ public:
     T height;
     T depth;
     T radius;
-    T swirl_amount = 0.3;
+    T swirl_amount = (T)0.3;
     T cx;
     T cy;
     T cz;
@@ -90,11 +90,11 @@ public:
         }
         scat = PointScatter3d<T>(cx, cy, cz, width, height, depth, seed);
     }
-    void swirl(float x, float y, float cx, float cy, float &sx, float &sy, float swirlRadius, float swirlTwists)
+    void swirl(float x, float y, float center_x, float center_y, float &sx, float &sy, float swirlRadius, float swirlTwists)
     {
         // compute the distance and angle from the swirl center:
-        float pixelX = (float)x - cx;
-        float pixelY = (float)y - cy;
+        float pixelX = (float)x - center_x;
+        float pixelY = (float)y - center_y;
         float pixelDistance = sqrt((pixelX * pixelX) + (pixelY * pixelY));
         float pixelAngle = atan2(pixelY, pixelX);
 
@@ -124,7 +124,7 @@ public:
 
         auto terrace = node->GenSingle2D(source_x, source_z, seed);
         // add 'octave'
-        terrace += node->GenSingle2D(source_x * 4, source_z * 4, seed) * 0.25;
+        terrace += node->GenSingle2D(source_x * 4, source_z * 4, seed) * (T)0.25;
         terrace = std::clamp(terrace, -1.0f, 1.0f);
         return terrace;
     }
@@ -173,4 +173,8 @@ public:
     }
 };
 
-void create_image_from_map(MapGenerator<float> &map, int height, int width, float image_scale);
+void fill_image_from_map(MapGenerator<float>& map, unsigned char* image, int width, int height, float image_scale);
+void create_image_from_map(MapGenerator<float> &map, int width, int height, float image_scale);
+
+void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned int* lookup, int height, int width);
+void fill_image_from_cellular(std::vector<vector2d<float>>& feature_points, unsigned int* lookup, unsigned char* image, int height, int width); 

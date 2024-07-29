@@ -17,9 +17,9 @@ public:
         lehmer_value += 0x3120fc15;
         uint64_t tmp;
         tmp = (uint64_t)lehmer_value * 0x4a39b70d;
-        uint32_t m1 = (tmp >> 32) ^ tmp;
+        uint32_t m1 = (uint32_t)((tmp >> 32) ^ tmp);
         tmp = (uint64_t)m1 * 0x12fad5c9;
-        uint32_t m2 = (tmp>>32) ^ tmp;
+        uint32_t m2 = (uint32_t)((tmp>>32) ^ tmp);
         return m2;
     }
     int an_int(int min, int max) {
@@ -43,8 +43,8 @@ class RandomContextSquirrel {
 public:
     RandomContextSquirrel(uint32_t seed=0, uint32_t offset=0) : offset(offset), seed(seed) {
     }
-    inline uint32_t get_random_index(uint32_t index, uint32_t seed) {
-        return SquirrelNoise5(index, seed);
+    inline uint32_t get_random_index(uint32_t index, uint32_t a_seed) {
+        return SquirrelNoise5(index, a_seed);
     }
     // A fast, reasonably robust random numbers
     inline uint32_t get_random() {
@@ -78,6 +78,7 @@ public:
 class Station {
 public:
     int type;
+    double distance = 0.0;
     double population = 0.0;
 };
 
@@ -107,7 +108,7 @@ class StarSystem {
 public:
     std::vector<Planet> planets;
 public:
-    StarSystem(uint32_t x, uint32_t y, bool generate_children, uint32_t seed=0) : rnd(seed + (x&0xFFFF) <<16 | (y&0xFFFF)){
+    StarSystem(uint32_t x, uint32_t y, bool generate_children, uint32_t seed=0) : rnd(seed + ((x&0xFFFF) <<16) | (y&0xFFFF)){
         // 16 bit resolution of the system by masking x,y
         // this should allow for a wrapping of the universe
 
@@ -146,10 +147,11 @@ public:
             p.population = std::max(rnd.an_int(-5'000'000, 20'000'000), 0);
             p.ring = rnd.an_int(0,10) == 1;
 
-            double station_orbit_distance = rnd.a_double(0.5, 2.0);
+            
             int stations = std::max(rnd.an_int(-5, 5), 0);
             for (int s=0; s<stations; s++) {
                 Station station;
+                station.distance = rnd.a_double(0.5, 2.0);
                 station.type = rnd.an_int(0, 5);
                 station.population = std::max(rnd.an_int(-500*(station.type+1), 2000*(station.type+1)), 0);
                 p.stations.push_back(station);
@@ -173,11 +175,11 @@ public:
                 moon.gases = rnd.a_double(0.0, 1.0);
                 moon.water = rnd.a_double(0.0, 1.0);
                 // Normalize make up 
-                double sum = 1.0 / (moon.foliage + moon.minerals + moon.gases + moon.water);
-                moon.foliage *= sum;
-                moon.minerals *= sum;
-                moon.gases *= sum;
-                moon.water *= sum;
+                double moon_sum = 1.0 / (moon.foliage + moon.minerals + moon.gases + moon.water);
+                moon.foliage *= moon_sum;
+                moon.minerals *= moon_sum;
+                moon.gases *= moon_sum;
+                moon.water *= moon_sum;
 
                 moon.population = std::max(rnd.an_int(-500'000, 2'000'000), 0);
                 moon.ring = rnd.an_int(0,10) == 1;

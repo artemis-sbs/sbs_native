@@ -6,7 +6,8 @@
 #include <random>
 #include <numbers>
 
-constexpr double PI = std::numbers::pi;
+/// @brief 
+#define PI  std::numbers::pi
 
 
 //https://codereview.stackexchange.com/questions/272800/c-vector3d-class

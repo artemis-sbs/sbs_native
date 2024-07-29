@@ -2,11 +2,13 @@
 
 #add_subdirectory(SDL2)
 #add_subdirectory(glfw)
+add_subdirectory(glm)
 add_subdirectory(pybind11)
 add_subdirectory(fastnoise2)
 #add_subdirectory(webgpu")
 add_subdirectory(raylib)
 add_subdirectory(imgui)
+
 
 
 #add_library(vendor INTERFACE)

@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.0.0...3.24 FATAL_ERROR)
-#project(pybind11 VERSION 1.0.0)
+#project(glm VERSION 1.0.0)
 
-include(pybind11.cmake)
+include(glm.cmake)
 

@@ -177,7 +177,7 @@ int main()
 
 	int index = 0;
 	const int size = 1000;
-    unsigned int *lookup = (unsigned int*)malloc(size * size * 2);
+    unsigned int *lookup = (unsigned int*)malloc(size * size * sizeof(unsigned int));
     unsigned char *pixels = (unsigned char*)malloc(size * size * 3);
 
 
@@ -189,7 +189,7 @@ int main()
     // }
 	//fill_image_from_map(map, pixels, 1000,1000, 52);
     int num_features = 100;
-    auto feature_points = std::vector<vector2d<float>>(num_features);
+    auto feature_points = std::vector<glm::vec2>(num_features);
     fill_cellular_lookup(feature_points, lookup, 1000,1000);
     fill_image_from_cellular(feature_points, lookup, pixels, 1000, 1000);
 

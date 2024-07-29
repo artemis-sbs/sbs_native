@@ -86,7 +86,8 @@
         "xutility": "cpp",
         "numbers": "cpp",
         "glfw3webgpu.h": "c",
-        "coroutine": "cpp"
+        "coroutine": "cpp",
+        "cstdarg": "cpp"
     },
     "cSpell.words": [
         "autosummary",

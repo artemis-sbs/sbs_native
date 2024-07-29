@@ -62,7 +62,7 @@ double distance(double x1, double y1, double x2, double y2) {
 }
 
 // Build a lookup table that store than nearest feature point for late lookup
-void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned int* image, int height, int width) {
+void fill_cellular_lookup(std::vector<glm::vec2>& feature_points, unsigned int* image, int height, int width) {
 
 	const int BYTES_PER_PIXEL = 1; /// red, green, & blue
     
@@ -81,7 +81,7 @@ void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned
 
     /// Calculate feature points
     int row, col;
-    //auto feature_points = std::make_unique<vector2d<float>[]>(num_features);//new vector2d<float>[num_features];
+    //auto feature_points = std::make_unique<glm::vec2[]>(num_features);//new glm::vec2[num_features];
     for (row = 0; row < height; row+= grid_step) {
         for (col = 0; col < width; col+=grid_step) {
             RandomContextSquirrel rnd(seed + ((col&0xFFFF) <<16) | (row&0xFFFF));
@@ -95,12 +95,13 @@ void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned
     // This uses a grid, finding the nearest neighbors 
     // could be done and could be done at O(n log n)
     // Then store the neighbors with the feature_point
-    vector2d<float> local_feature_points[9];
+    int local_feature_points[9];
     int last_index_y = -1;
     int last_index_x = -1;
+    
     for (row = 0; row < height; row++) {
         for (col = 0; col < width; col++) {
-            vector2d<float> this_point = {row,col};
+            glm::vec2 this_point = {row,col};
             // Index of the center
             int index_y = row/grid_step;
             int index_x = col/grid_step;
@@ -109,19 +110,21 @@ void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned
                 last_index_x = index_x;
                 
                 // Build the local ones
+                int local_index = 0;
                 for (int index_r=-1; index_r<2;index_r++) {
                     int row = index_r;
                     if (index_y+index_r < 0) row = 0;
-                    if (index_y+index_r >= grid_step) row = 0;
+                    if (index_y+index_r >= grid_step/10) row = 0;
 
                     for (int index_c=-1; index_c<2;index_c++) {
                         int col = index_c;
                         if (index_x+index_c < 0) col = 0;
-                        if (index_x+index_c >= grid_step) col = 0;
+                        if (index_x+index_c >= grid_step/10) col = 0;
 
                         int lf_i = (index_r+1)*3+index_c+1;
                         int f_i = (index_y+row)*row_length + (index_x+col);
-                        local_feature_points[lf_i] = feature_points[f_i];
+                        //local_feature_points[lf_i] = feature_points[f_i];
+                        local_feature_points[local_index++] = f_i;
                     }
                 }
             }
@@ -131,13 +134,18 @@ void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned
             int used_index = 0;
             for(int index=0;index<9;index++) {
                 //int index = i/100*10+j/100;
-                vector2d<float> feature_point= local_feature_points[index];            
+                int feature_point_index = local_feature_points[index]; 
+                auto feature_point = feature_points[feature_point_index];            
                 double ld = std::min(d, distance(col,row, feature_point.x,feature_point.y));
                 if (d > ld) {
-                    used_index = index;
+                    used_index = feature_point_index;
                     d = ld;
                 }
                 
+            }
+            if (row != 0) {
+                used_index  = used_index;
+
             }
             image[col+row*width] = used_index;
         }
@@ -146,7 +154,7 @@ void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned
 }
 
 
-void fill_image_from_cellular(std::vector<vector2d<float>>& feature_points, unsigned int* lookup, unsigned char* image, int height, int width) {
+void fill_image_from_cellular(std::vector<glm::vec2>& feature_points, unsigned int* lookup, unsigned char* image, int height, int width) {
 
 	const int BYTES_PER_PIXEL = 3; /// red, green, & blue
     
@@ -168,67 +176,25 @@ void fill_image_from_cellular(std::vector<vector2d<float>>& feature_points, unsi
 
     /// Calculate feature points
     int i, j;
-    //auto feature_points = std::make_unique<vector2d<float>[]>(num_features);//new vector2d<float>[num_features];
+    //auto feature_points = std::make_unique<glm::vec2[]>(num_features);//new glm::vec2[num_features];
     
-    auto feature_points_colors = std::vector<float>(num_features);//new vector2d<float>[num_features];
+    auto feature_points_colors = std::vector<float>(num_features);//new glm::vec2[num_features];
     //int i, j;
-    vector2d<float> local_feature_points[9];
-    float local_feature_points_colors[9];
-    int last_index_y = -1;
-    int last_index_x = -1;
     for (i = 0; i < height; i++) {
         for (j = 0; j < width; j++) {
-            vector2d<float> this_point = {i,j};
+            glm::vec2 this_point = {i,j};
             // Index of the center
-            int index_y = i/grid_step;
-            int index_x = j/grid_step;
-            if (last_index_x != index_x || last_index_y != index_y ) {
-                last_index_y = index_y;
-                last_index_x = index_x;
-                
-                // Build the local ones
-                for (int index_r=-1; index_r<2;index_r++) {
-                    int row = index_r;
-                    if (index_y+index_r < 0) row = 0;
-                    if (index_y+index_r >= height/grid_step) row = 0;
-
-                    for (int index_c=-1; index_c<2;index_c++) {
-                        int col = index_c;
-                        if (index_x+index_c < 0) col = 0;
-                        if (index_x+index_c >= width/grid_step) col = 0;
-
-                        int lf_i = (index_r+1)*3+index_c+1;
-                        int f_i = (index_y+row)*row_length + (index_x+col);
-                        
-                    }
-                }
-            }
-
-            double d =  20000;
+            int used_index = lookup[j + i*width ];
+            glm::vec2 feature_point= feature_points[used_index];            
+            double d = distance(j,i, feature_point.x,feature_point.y);
             
-            int used_index = 0;
-            for(int index=0;index<9;index++) {
-                //int index = i/100*10+j/100;
-                vector2d<float> feature_point= local_feature_points[index];            
-                double ld = std::min(d, distance(j,i, feature_point.x,feature_point.y));
-                if (d > ld) {
-                    used_index = index;
-                    d = ld;
-                }
-                
-            }
             unsigned char c =  (d / (float)grid_step) * 255;
             //HSV hsl {t*32, 1.0, 1.0};
             
-            
-            vector2d<float> feature_point= local_feature_points[used_index];
-            
-
             float s= 1.0;
-            float g = local_feature_points_colors[used_index];
+            float g = 360;
             if (d < 5.0) {
                 c = 255;
-                g = local_feature_points_colors[used_index];
             }
             else if (d < 10.0) {
                 c = 255;

@@ -7,6 +7,7 @@
 #include <utility>
 
 #include <random>
+#include <glm/vec2.hpp>
 
 template <typename T>
 class MapData
@@ -176,5 +177,5 @@ public:
 void fill_image_from_map(MapGenerator<float>& map, unsigned char* image, int width, int height, float image_scale);
 void create_image_from_map(MapGenerator<float> &map, int width, int height, float image_scale);
 
-void fill_cellular_lookup(std::vector<vector2d<float>>& feature_points, unsigned int* lookup, int height, int width);
-void fill_image_from_cellular(std::vector<vector2d<float>>& feature_points, unsigned int* lookup, unsigned char* image, int height, int width); 
+void fill_cellular_lookup(std::vector<glm::vec2>& feature_points, unsigned int* lookup, int height, int width);
+void fill_image_from_cellular(std::vector<glm::vec2>& feature_points, unsigned int* lookup, unsigned char* image, int height, int width); 
